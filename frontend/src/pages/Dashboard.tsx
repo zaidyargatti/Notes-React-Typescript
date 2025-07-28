@@ -26,7 +26,6 @@ export default function Dashboard() {
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
 
-  // ✅ Save logic
   const triggerSave = () => {
     if (!noteId) return;
 
@@ -50,17 +49,15 @@ export default function Dashboard() {
     }, 1000);
   };
 
-  // ✅ Fetch existing notes
   const fetchNotes = async () => {
     try {
-         setNotes([]);
+      setNotes([]);
       const res = await Axios.get('/user/notes/all-note', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = res.data;
       setNotes(data);
 
-      // Only select first note if nothing is selected
       if (!noteId && data.length > 0) {
         const first = data[0];
         setNoteId(first._id);
@@ -72,7 +69,25 @@ export default function Dashboard() {
     }
   };
 
-  // ✅ Create new note only on button click
+  const createNoteIfNeeded = async () => {
+    if (notes.length === 0) {
+      try {
+        const res = await Axios.post(
+          '/user/notes/write-note',
+          { title: 'Untitled', content: '' },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const newNote = res.data;
+        setNotes([newNote]);
+        setNoteId(newNote._id);
+        setTitle(newNote.title);
+        setContent(newNote.content);
+      } catch (err: any) {
+        console.error('Failed to create initial note:', err.response?.data || err.message);
+      }
+    }
+  };
+
   const createNote = async () => {
     try {
       const res = await Axios.post(
@@ -131,7 +146,13 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchNotes();
+    const load = async () => {
+      await fetchNotes();
+      await createNoteIfNeeded();
+    };
+
+    if (token) load();
+    else navigate('/');
   }, [token]);
 
   useEffect(() => {
@@ -141,6 +162,7 @@ export default function Dashboard() {
     }
     triggerSave();
   }, [title, content]);
+
 
   return (
     <>
