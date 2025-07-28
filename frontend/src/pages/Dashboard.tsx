@@ -24,8 +24,9 @@ export default function Dashboard() {
   const [showEditorMobile, setShowEditorMobile] = useState(false);
 
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isFirstRender = useRef(true); // 👈 prevent auto-save on first render
+  const isFirstRender = useRef(true);
 
+  // ✅ Save logic
   const triggerSave = () => {
     if (!noteId) return;
 
@@ -49,6 +50,7 @@ export default function Dashboard() {
     }, 1000);
   };
 
+  // ✅ Fetch existing notes
   const fetchNotes = async () => {
     try {
       const res = await Axios.get('/user/notes/all-note', {
@@ -57,7 +59,8 @@ export default function Dashboard() {
       const data = res.data;
       setNotes(data);
 
-      if (data.length > 0) {
+      // Only select first note if nothing is selected
+      if (!noteId && data.length > 0) {
         const first = data[0];
         setNoteId(first._id);
         setTitle(first.title || '');
@@ -68,6 +71,7 @@ export default function Dashboard() {
     }
   };
 
+  // ✅ Create new note only on button click
   const createNote = async () => {
     try {
       const res = await Axios.post(
@@ -139,15 +143,12 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Mobile Editor Fullscreen */}
+      {/* Mobile Fullscreen Editor */}
       {showEditorMobile && (
         <div className="md:hidden fixed inset-0 bg-gray-50 z-50 flex flex-col">
           <div className="flex items-center justify-between p-4 bg-white shadow-sm">
             <div className="flex items-center">
-              <button
-                onClick={() => setShowEditorMobile(false)}
-                className="text-xl text-gray-700 mr-3"
-              >
+              <button onClick={() => setShowEditorMobile(false)} className="text-xl text-gray-700 mr-3">
                 <IoArrowBack />
               </button>
               <div className="flex items-center gap-2">
@@ -156,7 +157,6 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
           <div className="flex-1 p-4 overflow-y-auto">
             <input
               type="text"
@@ -184,10 +184,7 @@ export default function Dashboard() {
               <MdOutlineNoteAlt className="text-blue-600" size={24} />
               <span className="text-lg font-semibold text-gray-800">Notice</span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-blue-600 hover:underline"
-            >
+            <button onClick={handleLogout} className="text-sm text-blue-600 hover:underline">
               Sign Out
             </button>
           </div>
@@ -251,9 +248,7 @@ export default function Dashboard() {
                   <h1 className="text-xl font-semibold text-gray-800">
                     Hello, {user?.name?.split(' ')[0] || 'User'} 👋
                   </h1>
-                  <p className="text-sm text-gray-500">
-                    "Write what should not be forgotten."
-                  </p>
+                  <p className="text-sm text-gray-500">"Write what should not be forgotten."</p>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -297,9 +292,7 @@ export default function Dashboard() {
                 <div
                   key={note._id}
                   className={`flex justify-between items-center p-3 rounded-lg cursor-pointer border ${
-                    note._id === noteId
-                      ? 'bg-blue-50 border-blue-300'
-                      : 'hover:bg-gray-100'
+                    note._id === noteId ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-100'
                   }`}
                   onClick={() => handleSelectNote(note)}
                 >
