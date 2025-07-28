@@ -49,42 +49,33 @@ export default function Dashboard() {
     }, 1000);
   };
 
-  const fetchNotes = async () => {
+  const fetchOrCreateNotes = async () => {
     try {
-      setNotes([]);
       const res = await Axios.get('/user/notes/all-note', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = res.data;
-      setNotes(data);
 
-      if (!noteId && data.length > 0) {
+      const data: Note[] = res.data;
+      if (data.length > 0) {
+        setNotes(data);
         const first = data[0];
         setNoteId(first._id);
         setTitle(first.title || '');
         setContent(first.content || '');
-      }
-    } catch (err: any) {
-      console.error('Error fetching notes:', err.response?.data || err.message);
-    }
-  };
-
-  const createNoteIfNeeded = async () => {
-    if (notes.length === 0) {
-      try {
-        const res = await Axios.post(
+      } else {
+        const createRes = await Axios.post(
           '/user/notes/write-note',
           { title: 'Untitled', content: '' },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        const newNote = res.data;
+        const newNote = createRes.data;
         setNotes([newNote]);
         setNoteId(newNote._id);
         setTitle(newNote.title);
         setContent(newNote.content);
-      } catch (err: any) {
-        console.error('Failed to create initial note:', err.response?.data || err.message);
       }
+    } catch (err: any) {
+      console.error('Error fetching or creating notes:', err.response?.data || err.message);
     }
   };
 
@@ -146,13 +137,11 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const load = async () => {
-      await fetchNotes();
-      await createNoteIfNeeded();
-    };
-
-    if (token) load();
-    else navigate('/');
+    if (token) {
+      fetchOrCreateNotes();
+    } else {
+      navigate('/');
+    }
   }, [token]);
 
   useEffect(() => {
@@ -162,7 +151,6 @@ export default function Dashboard() {
     }
     triggerSave();
   }, [title, content]);
-
 
   return (
     <>
