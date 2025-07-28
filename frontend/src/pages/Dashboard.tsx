@@ -28,7 +28,6 @@ export default function Dashboard() {
 
   const triggerSave = () => {
     if (!noteId) return;
-
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
 
     saveTimeout.current = setTimeout(async () => {
@@ -49,33 +48,23 @@ export default function Dashboard() {
     }, 1000);
   };
 
-  const fetchOrCreateNotes = async () => {
+  const fetchNotes = async () => {
     try {
       const res = await Axios.get('/user/notes/all-note', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const data: Note[] = res.data;
+      setNotes(data);
+
       if (data.length > 0) {
-        setNotes(data);
         const first = data[0];
         setNoteId(first._id);
         setTitle(first.title || '');
         setContent(first.content || '');
-      } else {
-        const createRes = await Axios.post(
-          '/user/notes/write-note',
-          { title: 'Untitled', content: '' },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const newNote = createRes.data;
-        setNotes([newNote]);
-        setNoteId(newNote._id);
-        setTitle(newNote.title);
-        setContent(newNote.content);
       }
     } catch (err: any) {
-      console.error('Error fetching or creating notes:', err.response?.data || err.message);
+      console.error('Error fetching notes:', err.response?.data || err.message);
     }
   };
 
@@ -137,11 +126,8 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (token) {
-      fetchOrCreateNotes();
-    } else {
-      navigate('/');
-    }
+    if (token) fetchNotes();
+    else navigate('/');
   }, [token]);
 
   useEffect(() => {
@@ -151,6 +137,7 @@ export default function Dashboard() {
     }
     triggerSave();
   }, [title, content]);
+
 
   return (
     <>
