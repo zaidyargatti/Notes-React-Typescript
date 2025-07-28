@@ -20,7 +20,8 @@ export default function SignUp() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleGoogleSignup = () => {
+  const handleGoogleSignup =async () => {
+    await Axios.get('/');
     window.open('https://notes-react-typescript.onrender.com/user/google', '_self');
   };
 
