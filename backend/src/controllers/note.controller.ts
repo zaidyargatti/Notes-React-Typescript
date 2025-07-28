@@ -24,7 +24,6 @@ import Note from '../models/note.model';
 
   res.json({ message: 'Note deleted' });
 };
-
 const updateNote = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { content, title } = req.body;
@@ -33,19 +32,13 @@ const updateNote = async (req: Request, res: Response) => {
   const note = await Note.findOne({ _id: id, userId });
   if (!note) return res.status(404).json({ error: 'Note not found or unauthorized' });
 
-  // Only append if content is provided and not empty
-  if (content !== undefined && content !== '') {
-    note.content += '\n' + content; // append with a newline
-  }
-
-  // If title changed, update it
-  if (title !== undefined && title !== '') {
-    note.title = title;
-  }
+  note.title = title || '';
+  note.content = content || '';
 
   await note.save();
   res.json(note);
 };
+
 
  const getAllNotes = async (req: Request, res: Response) => {
   const userId = (req as any).user.userId;

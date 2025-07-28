@@ -25,28 +25,33 @@ export default function Dashboard() {
 
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
+const triggerSave = () => {
+  if (!noteId) return;
 
-  const triggerSave = () => {
-    if (!noteId) return;
-    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+  if (saveTimeout.current) clearTimeout(saveTimeout.current);
 
-    saveTimeout.current = setTimeout(async () => {
-      try {
-        await Axios.put(
-          `/user/notes/update-note/${noteId}`,
-          { title, content },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setNotes((prev) =>
-          prev.map((note) =>
-            note._id === noteId ? { ...note, title, content } : note
-          )
-        );
-      } catch (err: any) {
-        console.error('Auto-save failed:', err.response?.data || err.message);
-      }
-    }, 1000);
-  };
+  const updatedTitle = title.trim();
+  const updatedContent = content;
+
+  saveTimeout.current = setTimeout(async () => {
+    try {
+      await Axios.put(
+        `/user/notes/update-note/${noteId}`,
+        { title: updatedTitle, content: updatedContent },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Pure state update, not mixed
+      setNotes((prev) =>
+        prev.map((note) =>
+          note._id === noteId ? { ...note, title: updatedTitle, content: updatedContent } : note
+        )
+      );
+    } catch (err: any) {
+      console.error('Auto-save failed:', err.response?.data || err.message);
+    }
+  }, 1000);
+};
 
   const fetchNotes = async () => {
     try {
