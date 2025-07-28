@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Axios from '../services/Axios';
 import { useAuth } from '../context/AuthContext';
-import right from '../assets/right.png';
+import { MdOutlineNoteAlt } from 'react-icons/md';
+import right from '../assets/right.png'
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
-  const [timer, setTimer] = useState(600); // 10 minutes
+  const [timer, setTimer] = useState(600);
   const [resendEnabled, setResendEnabled] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -25,9 +27,7 @@ export default function SignIn() {
   }, [otpSent, timer]);
 
   const formatTimer = () => {
-    const m = Math.floor(timer / 60)
-      .toString()
-      .padStart(2, '0');
+    const m = Math.floor(timer / 60).toString().padStart(2, '0');
     const s = (timer % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
@@ -50,7 +50,7 @@ export default function SignIn() {
     try {
       setLoading(true);
       const res = await Axios.post('/user/verify-login-otp', { email, otp });
-      login(res.data.user, res.data.token);
+      login(res.data.user, res.data.token, rememberMe);
       navigate('/dashboard');
     } catch (err: any) {
       alert(err?.response?.data?.error || 'Invalid OTP');
@@ -59,18 +59,28 @@ export default function SignIn() {
     }
   };
 
-  const handleResend = async () => {
+  const handleResend = () => {
     if (!resendEnabled) return;
-    handleGetOtp(); // same function as original OTP
+    handleGetOtp();
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-5xl bg-white shadow-xl rounded-2xl flex overflow-hidden">
-        {/* Left Side */}
-        <div className="w-1/2 p-10 space-y-6">
-          <h2 className="text-3xl font-bold text-gray-800">Sign in</h2>
-          <p className="text-sm text-gray-500">Please login to continue to your account.</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-4 relative">
+      {/* Notes Header */}
+      <div className="w-full flex justify-center md:justify-start md:absolute md:top-6 md:left-10 mb-6 md:mb-0">
+        <div className="flex items-center gap-2 text-xl font-bold italic text-gray-800 md:text-3xl">
+          <MdOutlineNoteAlt className="text-blue-600" size={28} />
+          Notes
+        </div>
+      </div>
+
+      <div className="w-full max-w-4xl flex flex-col md:flex-row items-center md:items-stretch md:shadow-xl md:bg-white md:rounded-2xl overflow-hidden mt-10 md:mt-0">
+        {/* Form Side */}
+        <div className="w-full md:w-1/2 p-8 md:p-10 space-y-6">
+          <div className="text-center md:text-left">
+            <h2 className="text-3xl font-bold text-gray-800">Sign In</h2>
+            <p className="text-sm text-gray-500">Please login to continue to your account.</p>
+          </div>
 
           <div className="space-y-6">
             {/* Email */}
@@ -81,7 +91,7 @@ export default function SignIn() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder=" "
-                className="peer w-full px-4 pt-5 pb-2 border border-gray-500 rounded-lg focus:outline-none"
+                className="peer w-full h-14 px-4 pt-4 border border-gray-500 rounded-lg focus:outline-none"
               />
               <label
                 htmlFor="email"
@@ -103,7 +113,7 @@ export default function SignIn() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     placeholder=" "
-                    className="peer w-full px-4 pt-5 pb-2 border border-gray-500 rounded-lg focus:outline-none"
+                    className="peer w-full h-14 px-4 pt-4 border border-gray-500 rounded-lg focus:outline-none"
                   />
                   <label
                     htmlFor="otp"
@@ -125,28 +135,34 @@ export default function SignIn() {
                   >
                     Resend OTP
                   </span>
-                  {!resendEnabled && <span className="text-gray-400">{formatTimer()}</span>}
+                  {!resendEnabled && (
+                    <span className="text-gray-400">{formatTimer()}</span>
+                  )}
                 </div>
               </>
             )}
+
+            {/* Remember me */}
+            <div className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <label className="text-gray-500">Keep me logged in</label>
+            </div>
           </div>
 
-          {/* Action Button */}
+          {/* Submit */}
           <button
             onClick={otpSent ? handleVerifyOtp : handleGetOtp}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 mt-4"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700"
           >
-            {loading ? 'Loading...' : otpSent ? 'Sign in' : 'Get OTP'}
+            {loading ? 'Loading...' : otpSent ? 'Sign In' : 'Get OTP'}
           </button>
 
-          {/* Extra */}
-          <div className="flex items-center gap-2 text-sm mt-2">
-            <input type="checkbox" />
-            <label className="text-gray-500">Keep me logged in</label>
-          </div>
-
-          <p className="text-sm text-gray-500 text-center mt-2">
+          <p className="text-sm text-gray-500 text-center">
             Need an account?{' '}
             <a href="/signup" className="text-blue-600 font-medium hover:underline">
               Create one
@@ -154,11 +170,11 @@ export default function SignIn() {
           </p>
         </div>
 
-        {/* Right Side Image */}
-        <div className="w-1/2">
+        {/* Image Side */}
+        <div className="hidden md:block w-1/2">
           <img
             src={right}
-            alt="Sign In"
+            alt="Sign In Visual"
             className="w-full h-full object-cover rounded-r-2xl"
           />
         </div>

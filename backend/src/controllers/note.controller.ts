@@ -2,11 +2,17 @@ import { Request, Response } from 'express';
 import Note from '../models/note.model';
 
  const createNote = async (req: Request, res: Response) => {
-  const { title,content } = req.body;
-  const userId = (req as any).user.userId;
-
-  const note = await Note.create({ title,content, userId });
-  res.status(201).json(note);
+ try {
+   const { title,content } = req.body;
+   const userId = (req as any).user.userId;
+ 
+   const note = await Note.create({ title,content, userId });
+   res.status(201).json(note);
+ } catch (error) {
+  res.status(500).json({
+    message:'server error',error
+  })
+ }
 };
 
  const deleteNote = async (req: Request, res: Response) => {
@@ -19,18 +25,25 @@ import Note from '../models/note.model';
   res.json({ message: 'Note deleted' });
 };
 
- const updateNote = async (req: Request, res: Response) => {
+const updateNote = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { content } = req.body;
+  const { content, title } = req.body;
   const userId = (req as any).user.userId;
 
   const note = await Note.findOne({ _id: id, userId });
   if (!note) return res.status(404).json({ error: 'Note not found or unauthorized' });
 
-  // Append new content to existing content
-  note.content += content;
-  await note.save();
+  // Only append if content is provided and not empty
+  if (content !== undefined && content !== '') {
+    note.content += '\n' + content; // append with a newline
+  }
 
+  // If title changed, update it
+  if (title !== undefined && title !== '') {
+    note.title = title;
+  }
+
+  await note.save();
   res.json(note);
 };
 

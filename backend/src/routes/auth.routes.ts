@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import passport from 'passport';
-import { signup, verifyOtp,login ,verifyLoginOtp} from '../controllers/auth.controller';
+import { signup, verifyOtp,login ,verifyLoginOtp,getProfile} from '../controllers/auth.controller';
 import generateToken from '../utils/jwt';
+import protect from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -18,8 +19,9 @@ router.get(
   (req, res) => {
     const user = (req as any).user;
     const token = generateToken(user._id.toString());
-    res.redirect(`http://localhost:5000/welcome?token=${token}`);
+    res.redirect(`http://localhost:5173/google-auth-success?token=${token}`);
   }
 );
+router.get('/profile',protect , getProfile);
 
 export default router;
