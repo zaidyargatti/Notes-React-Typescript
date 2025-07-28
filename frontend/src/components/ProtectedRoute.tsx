@@ -8,7 +8,9 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { token } = useAuth();
+  const { token, loading } = useAuth();
+
+  if (loading) return null; // Or a spinner: <div>Loading...</div>
 
   if (!token) {
     return <Navigate to="/" replace />;
