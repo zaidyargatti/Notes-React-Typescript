@@ -53,6 +53,7 @@ export default function Dashboard() {
   // ✅ Fetch existing notes
   const fetchNotes = async () => {
     try {
+         setNotes([]);
       const res = await Axios.get('/user/notes/all-note', {
         headers: { Authorization: `Bearer ${token}` },
       });
