@@ -20,7 +20,7 @@ export default function SignUp() {
     const navigate = useNavigate();
 
     const handleGoogleSignup = () => {
-          window.open('http://localhost:5000/user/google', '_self');
+          window.open('https://notes-react-typescript.vercel.app/user/google', '_self');
     };
 
     const handleSubmit = async () => {
