@@ -19,7 +19,7 @@ router.get(
   (req, res) => {
     const user = (req as any).user;
     const token = generateToken(user._id.toString());
-    res.redirect(`http://localhost:5173/google-auth-success?token=${token}`);
+    res.redirect(`https://notes-react-typescript.vercel.app/google-auth-success?token=${token}`);
   }
 );
 router.get('/profile',protect , getProfile);
