@@ -7,7 +7,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: '/user/google/callback'
+      callbackURL: 'https://notes-react-typescript.onrender.com/user/google/callback'
     },
     async (_accessToken, _refreshToken, profile, done) => {
       const email = profile.emails?.[0].value;
