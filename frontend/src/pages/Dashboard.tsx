@@ -208,7 +208,7 @@ export default function Dashboard() {
                 <div className="p-4">
                     <h2 className="text-base font-semibold mb-3 text-gray-800">Notes</h2>
                     <div className="space-y-2">
-                        {notes.map((note, index) => (
+                        {notes.map((note) => (
                             <div
                                 key={note._id}
                                 className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm"
