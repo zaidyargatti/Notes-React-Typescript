@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Axios from '../services/Axios';
 import { useAuth } from '../context/AuthContext';
 import { MdOutlineNoteAlt } from 'react-icons/md';
-import right from '../assets/right.png'
+import right from '../assets/right.png';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -13,6 +13,8 @@ export default function SignIn() {
   const [resendEnabled, setResendEnabled] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ email?: string; otp?: string }>({});
+
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -33,27 +35,39 @@ export default function SignIn() {
   };
 
   const handleGetOtp = async () => {
+    if (!email) {
+      setError({ email: 'Email is required' });
+      return;
+    }
+
     try {
       setLoading(true);
+      setError({});
       await Axios.post('/user/login', { email });
       setOtpSent(true);
       setTimer(600);
       setResendEnabled(false);
     } catch (err: any) {
-      alert(err?.response?.data?.error || 'Something went wrong');
+      setError({ email: err?.response?.data?.error || 'Something went wrong' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleVerifyOtp = async () => {
+    if (!otp) {
+      setError({ otp: 'OTP is required' });
+      return;
+    }
+
     try {
       setLoading(true);
+      setError({});
       const res = await Axios.post('/user/verify-login-otp', { email, otp });
       login(res.data.user, res.data.token, rememberMe);
       navigate('/dashboard');
     } catch (err: any) {
-      alert(err?.response?.data?.error || 'Invalid OTP');
+      setError({ otp: err?.response?.data?.error || 'Invalid OTP' });
     } finally {
       setLoading(false);
     }
@@ -101,6 +115,9 @@ export default function SignIn() {
               >
                 Email
               </label>
+              {error.email && (
+                <p className="text-red-500 text-sm mt-1 ml-1">{error.email}</p>
+              )}
             </div>
 
             {/* OTP */}
@@ -123,6 +140,9 @@ export default function SignIn() {
                   >
                     OTP
                   </label>
+                  {error.otp && (
+                    <p className="text-red-500 text-sm mt-1 ml-1">{error.otp}</p>
+                  )}
                 </div>
 
                 {/* Timer & Resend */}
