@@ -8,6 +8,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL: process.env.GOOGLE_CALLBACK_URL!
+      
     },
     async (_accessToken, _refreshToken, profile, done) => {
       const email = profile.emails?.[0].value;
@@ -21,6 +22,7 @@ passport.use(
           googleId: profile.id
         });
       }
+console.log('GOOGLE CALLBACK URL:', process.env.GOOGLE_CALLBACK_URL);
 
       return done(null, user);
     }
